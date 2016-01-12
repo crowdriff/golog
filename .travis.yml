@@ -1,0 +1,12 @@
+language: go
+
+sudo: false
+
+go:
+  - 1.5
+
+install:
+  - make tools
+  - make deps
+
+script: make test
