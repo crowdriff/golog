@@ -10,20 +10,25 @@ import (
 // record the response code returned, as well as the size of the response body.
 type responseWriter struct {
 	http.ResponseWriter
-	Code int
-	Size int
+	written bool
+	Code    int
+	Size    int
 }
 
 // WriteHeader records the code and calls the underlying ResponseWriter's
 // WriteHeader method.
 func (rw *responseWriter) WriteHeader(c int) {
 	rw.Code = c
+	rw.written = true
 	rw.ResponseWriter.WriteHeader(c)
 }
 
 // Write records the number of bytes written and calls the underlying
 // ResponseWriter's Write method.
 func (rw *responseWriter) Write(b []byte) (int, error) {
+	if !rw.written {
+		rw.WriteHeader(http.StatusOK)
+	}
 	n, err := rw.ResponseWriter.Write(b)
 	rw.Size += n
 	return n, err
@@ -73,7 +78,7 @@ func LogRequestMiddleware(l *Logger) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		f := func(w http.ResponseWriter, r *http.Request) {
 			t := time.Now().UTC()
-			wr := &responseWriter{w, 0, 0}
+			wr := &responseWriter{w, false, 0, 0}
 			h.ServeHTTP(wr, r)
 			l.logRequest(wr, r, t)
 		}

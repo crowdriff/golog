@@ -19,7 +19,6 @@ type fakeHTTPHandler struct {
 }
 
 func (h *fakeHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(h.Code)
 	w.Write(make([]byte, h.Size))
 }
 

@@ -74,14 +74,16 @@ func (l *Logger) formatHeader(t time.Time) {
 	l.buf = append(l.buf, ']', ' ')
 }
 
-// log is the function that actually logs the provided string and log time. The
-// date and server name and written first, followed by the message.
+// Log writes the provided string to standard out with the proper logging
+// format. The date and server name are written first, followed by the message.
 // An example is:
 // 2016/01/12 10:21:38 [golog] message goes here
 // <time> [<server name>] <message>
 //
 // Note: the provided time should be UTC.
-func (l *Logger) log(s string, t time.Time) error {
+func (l *Logger) Log(s string) error {
+	t := time.Now().UTC()
+
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -91,13 +93,6 @@ func (l *Logger) log(s string, t time.Time) error {
 
 	_, err := l.Out.Write(l.buf)
 	return err
-}
-
-// Log writes the provided string to standard out with the proper logging
-// format.
-func (l *Logger) Log(s string) error {
-	t := time.Now().UTC()
-	return l.log(s, t)
 }
 
 // LogPanic recovers from any panic and logs the panic message and the stack
