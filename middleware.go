@@ -21,7 +21,7 @@ func (rw *responseWriter) WriteHeader(c int) {
 	rw.ResponseWriter.WriteHeader(c)
 }
 
-// Write records the size of the bytes written and calls the underlying
+// Write records the number of bytes written and calls the underlying
 // ResponseWriter's Write method.
 func (rw *responseWriter) Write(b []byte) (int, error) {
 	n, err := rw.ResponseWriter.Write(b)
@@ -30,7 +30,7 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 }
 
 // Flush calls the underlying ResponseWriter's Flush method, if it conforms to
-// the http.Flusher.
+// the http.Flusher interface.
 func (rw *responseWriter) Flush() {
 	if f, ok := rw.ResponseWriter.(http.Flusher); ok {
 		f.Flush()
@@ -40,11 +40,14 @@ func (rw *responseWriter) Flush() {
 // logRequest logs a request to standard out with the provided resonse writer,
 // request, and starting time.
 // An example to show the format is:
+//
 // 2016/01/12 10:21:38 [golog] 200 GET /path?query=10 (1024) 4580
 // <time> [<server name>] <status> <method> <path> (<bytes written>) <microseconds>
 //
 // Note: the provided time should be UTC.
 func (l *Logger) logRequest(w *responseWriter, r *http.Request, start time.Time) error {
+	since := time.Since(start)
+
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -57,7 +60,7 @@ func (l *Logger) logRequest(w *responseWriter, r *http.Request, start time.Time)
 	l.buf = append(l.buf, ' ', '(')
 	l.buf = append(l.buf, strconv.Itoa(w.Size)...)
 	l.buf = append(l.buf, ')', ' ')
-	l.buf = append(l.buf, strconv.Itoa(int(time.Since(start))/1000)...)
+	l.buf = append(l.buf, strconv.Itoa(int(since)/1e3)...)
 	l.buf = append(l.buf, '\n')
 
 	_, err := l.Out.Write(l.buf)
