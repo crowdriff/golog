@@ -1,5 +1,7 @@
 # golog
 
+[![Build Status](https://travis-ci.org/crowdriff/golog.svg?branch=master)](https://travis-ci.org/crowdriff/golog)
+
 golog is a logging package to write errors, panics, requests, or any message to standard out with a set format.
 
 ## API
