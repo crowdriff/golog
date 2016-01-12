@@ -71,6 +71,8 @@ var _ = Describe("Golog", func() {
 	})
 })
 
+// parseDate parses the date (and trailing space) from the provided string and
+// returns the remaining string.
 func parseDate(s string) string {
 	// parse year
 	year, err := strconv.Atoi(s[:4])
@@ -123,6 +125,8 @@ func parseDate(s string) string {
 	return s[20:]
 }
 
+// parseServerName parses the server name (and trailing space) from the provided
+// string and returns the remaining string.
 func parseServerName(s, name string) string {
 	ok := strings.HasPrefix(s, "["+name+"]")
 	Ω(ok).Should(BeTrue())
