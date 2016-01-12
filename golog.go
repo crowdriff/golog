@@ -41,16 +41,31 @@ func (l *Logger) formatHeader(t time.Time) {
 	year, month, day := t.Date()
 	l.buf = append(l.buf, strconv.Itoa(year)...)
 	l.buf = append(l.buf, '/')
+	if month < 10 {
+		l.buf = append(l.buf, '0')
+	}
 	l.buf = append(l.buf, strconv.Itoa(int(month))...)
 	l.buf = append(l.buf, '/')
+	if day < 10 {
+		l.buf = append(l.buf, '0')
+	}
 	l.buf = append(l.buf, strconv.Itoa(day)...)
 	l.buf = append(l.buf, ' ')
 
 	hour, min, sec := t.Clock()
+	if hour < 10 {
+		l.buf = append(l.buf, '0')
+	}
 	l.buf = append(l.buf, strconv.Itoa(hour)...)
 	l.buf = append(l.buf, ':')
+	if min < 10 {
+		l.buf = append(l.buf, '0')
+	}
 	l.buf = append(l.buf, strconv.Itoa(min)...)
 	l.buf = append(l.buf, ':')
+	if sec < 10 {
+		l.buf = append(l.buf, '0')
+	}
 	l.buf = append(l.buf, strconv.Itoa(sec)...)
 	l.buf = append(l.buf, ' ')
 
@@ -88,13 +103,11 @@ func (l *Logger) Log(s string) error {
 // LogPanic recovers from any panic and logs the panic message and the stack
 // trace to standard out with the proper logging format.
 func (l *Logger) LogPanic() {
-	defer func() {
-		if err := recover(); err != nil {
-			stack := make([]byte, stackSize)
-			stack = stack[:runtime.Stack(stack, true)]
-			l.Log(fmt.Sprintf("panic: %s\n%s", err, stack))
-		}
-	}()
+	if err := recover(); err != nil {
+		stack := make([]byte, stackSize)
+		stack = stack[:runtime.Stack(stack, true)]
+		l.Log(fmt.Sprintf("panic: %s\n%s", err, stack))
+	}
 }
 
 // LogError logs the provided error to standard out with the proper logging

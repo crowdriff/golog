@@ -41,7 +41,7 @@ Recover from a panic and log the panic message and stack trace to standard out.
 Use:
 ```
 l := NewLogger("golog")
-l.LogPanic()
+defer l.LogPanic()
 panic("this is the panic message")
 ```
 
