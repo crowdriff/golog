@@ -2,7 +2,6 @@ package golog
 
 import (
 	"io"
-	"time"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -32,7 +31,7 @@ func (l *Logger) SetOutput(out io.Writer) {
 	log.SetOutput(out)
 }
 
-func (l *Logger) standardEntry(t time.Time) *log.Entry {
+func (l *Logger) standardEntry() *log.Entry {
 	return log.WithFields(log.Fields{
 		"app": l.app,
 		"v":   l.version,
@@ -42,17 +41,17 @@ func (l *Logger) standardEntry(t time.Time) *log.Entry {
 // Log writes the provided string to standard out with the proper logging
 // format.
 func (l *Logger) Log(s string) {
-	l.standardEntry(time.Now()).Print(s)
+	l.standardEntry().Print(s)
 }
 
 // LogError logs the provided error to standard out with the proper logging
 // format.
 func (l *Logger) LogError(err error) {
-	l.standardEntry(time.Now()).Error(err)
+	l.standardEntry().Error(err)
 }
 
 // LogWarning logs the provided warning message to standard out with the proper
 // logging format.
 func (l *Logger) LogWarning(s string) {
-	l.standardEntry(time.Now()).Warn(s)
+	l.standardEntry().Warn(s)
 }

@@ -61,17 +61,15 @@ func realIP(r *http.Request) string {
 // logRequest logs the provided responseWriter, http request, and starting time
 // to standard out in the proper format.
 func (l *Logger) logRequest(w *responseWriter, r *http.Request, start time.Time) {
-	t := time.Now()
-
 	// set real IP
 	if ip := realIP(r); ip != "" {
 		r.RemoteAddr = ip
 	}
 
 	// log the request
-	l.standardEntry(t).WithFields(log.Fields{
+	l.standardEntry().WithFields(log.Fields{
 		"code":   w.Code,
-		"dur":    int(t.Sub(start)) / 1e3,
+		"dur":    int(time.Now().Sub(start)) / 1e3,
 		"ip":     r.RemoteAddr,
 		"method": r.Method,
 		"size":   w.Size,
@@ -84,7 +82,7 @@ func (l *Logger) logRequest(w *responseWriter, r *http.Request, start time.Time)
 func LogRequestMiddleware(l *Logger) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		f := func(w http.ResponseWriter, r *http.Request) {
-			t := time.Now().UTC()
+			t := time.Now()
 			wr := &responseWriter{w, false, 0, 0}
 			h.ServeHTTP(wr, r)
 			l.logRequest(wr, r, t)
