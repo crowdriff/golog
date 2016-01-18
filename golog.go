@@ -31,6 +31,7 @@ func (l *Logger) SetOutput(out io.Writer) {
 	log.SetOutput(out)
 }
 
+// standardEntry returns an Entry with the app and version fields already set.
 func (l *Logger) standardEntry() *log.Entry {
 	return log.WithFields(log.Fields{
 		"app": l.app,
@@ -40,8 +41,8 @@ func (l *Logger) standardEntry() *log.Entry {
 
 // Log writes the provided string to standard out with the proper logging
 // format.
-func (l *Logger) Log(s string) {
-	l.standardEntry().Print(s)
+func (l *Logger) Log(msg string) {
+	l.standardEntry().Print(msg)
 }
 
 // LogError logs the provided error to standard out with the proper logging
@@ -52,6 +53,6 @@ func (l *Logger) LogError(err error) {
 
 // LogWarning logs the provided warning message to standard out with the proper
 // logging format.
-func (l *Logger) LogWarning(s string) {
-	l.standardEntry().Warn(s)
+func (l *Logger) LogWarning(msg string) {
+	l.standardEntry().Warn(msg)
 }

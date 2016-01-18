@@ -2,53 +2,56 @@
 
 [![Build Status](https://travis-ci.org/crowdriff/golog.svg?branch=master)](https://travis-ci.org/crowdriff/golog)
 
-golog is a logging package to write errors, panics, requests, or any message to standard out with a set format.
+golog is a logging package to write warnings, errors, requests, or any message to standard out with a set format.
 
-## API
+## Usage
 
-### `func (l *Logger) Log(s string) error`
+### NewLogger
 
-Log any string to standard out.
+`func NewLogger(app, version string) *Logger`
 
-Use:
+Create a new Logger instance with the provided app name and version.
+
+### Log
+
+`func (l *Logger) Log(msg string)`
+
+Log any message to standard out.
+
+Format:
 ```
-l := NewLogger("golog")
-l.Log("this is the message")
+time="2016-01-18T13:49:17-05:00" level=info app=golog msg="test message" v=v0.0.1
 ```
 
-Output:
-```
-2016/01/12 10:21:38 [golog] this is the message
-```
+### LogError
 
-### `func (l *Logger) LogError(err error) error`
+`func (l *Logger) LogError(err error)`
 
 Log an error to standard out.
 
-Use:
+Format:
 ```
-l := NewLogger("golog")
-l.LogError(errors.New("this is the error message"))
-```
-
-Output:
-```
-2016/01/12 10:21:38 [golog] error: this is the error message
+time="2016-01-18T13:49:17-05:00" level=error app=golog msg="error message" v=v0.0.1
 ```
 
-### `func (l *Logger) LogPanic() `
+### LogWarning
 
-Recover from a panic and log the panic message and stack trace to standard out.
+`func (l *Logger) LogWarning(msg string)`
 
-Use:
+Log a warning message to standard out.
+
+Format:
 ```
-l := NewLogger("golog")
-defer l.LogPanic()
-panic("this is the panic message")
+time="2016-01-18T13:49:17-05:00" level=warn app=golog msg="warning message" v=v0.0.1
 ```
 
-Output:
+### LogRequestMiddleware
+
+`func LogRequestMiddleware(l *Logger) func(http.Handler) http.Handler`
+
+Return a middleware function (`func(http.Handler) http.Handler`) that logs each request to standard out.
+
+Format:
 ```
-2016/01/12 10:21:38 [golog] panic: this is the panic message
-<stack trace>
+time="2016-01-18T13:49:17-05:00" level=info app=api code=200 dur=115745 ip="127.0.0.1:65089" method=GET size=277 uri="/test?token=token1" v=v0.0.1
 ```
