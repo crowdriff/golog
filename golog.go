@@ -1,112 +1,71 @@
 package golog
 
 import (
-	"fmt"
 	"io"
-	"os"
 	"runtime"
-	"strconv"
-	"sync"
-	"time"
-)
+	"strings"
 
-// stackSize is the maximum number of bytes to log for a stack trace
-const stackSize = 2 * 1024
+	log "github.com/Sirupsen/logrus"
+)
 
 // Logger represents the object used to log errors, panics, requests, etc.
 // By default, Logger writes to standard out, however this can be changed
 // for testing purposes.
 type Logger struct {
-	mu      sync.Mutex // mutex that protects everything below
-	Out     io.Writer  // where the logs go
-	svrName string     // the server name prefix to use
-	buf     []byte     // buffer that accumulates the log message
+	app     string // the server name
+	version string // the server version
 }
 
 // NewLogger creates a new Logger object with the provided server name and
 // returns the Logger object pointer.
-func NewLogger(svr string) *Logger {
+func NewLogger(app, version string) *Logger {
+	log.SetFormatter(&log.TextFormatter{
+		DisableColors: true,
+	})
 	return &Logger{
-		Out:     os.Stdout,
-		svrName: svr,
+		app:     app,
+		version: version,
 	}
 }
 
-// formatHeader writes the provided time to the logging buffer slice as well as
-// the server name prefix with the following format:
-// '<year>/<month>/<day> <hour>:<min>:<sec> [<server name>] '
-func (l *Logger) formatHeader(t time.Time) {
-	l.buf = l.buf[:0]
+// SetOutput sets the output to be logged to.
+func (l *Logger) SetOutput(out io.Writer) {
+	log.SetOutput(out)
+}
 
-	year, month, day := t.Date()
-	l.buf = append(l.buf, strconv.Itoa(year)...)
-	l.buf = append(l.buf, '/')
-	if month < 10 {
-		l.buf = append(l.buf, '0')
-	}
-	l.buf = append(l.buf, strconv.Itoa(int(month))...)
-	l.buf = append(l.buf, '/')
-	if day < 10 {
-		l.buf = append(l.buf, '0')
-	}
-	l.buf = append(l.buf, strconv.Itoa(day)...)
-	l.buf = append(l.buf, ' ')
-
-	hour, min, sec := t.Clock()
-	if hour < 10 {
-		l.buf = append(l.buf, '0')
-	}
-	l.buf = append(l.buf, strconv.Itoa(hour)...)
-	l.buf = append(l.buf, ':')
-	if min < 10 {
-		l.buf = append(l.buf, '0')
-	}
-	l.buf = append(l.buf, strconv.Itoa(min)...)
-	l.buf = append(l.buf, ':')
-	if sec < 10 {
-		l.buf = append(l.buf, '0')
-	}
-	l.buf = append(l.buf, strconv.Itoa(sec)...)
-	l.buf = append(l.buf, ' ')
-
-	l.buf = append(l.buf, '[')
-	l.buf = append(l.buf, l.svrName...)
-	l.buf = append(l.buf, ']', ' ')
+// standardEntry returns an Entry with the app and version fields already set.
+func (l *Logger) standardEntry() *log.Entry {
+	return log.WithFields(log.Fields{
+		"app": l.app,
+		"v":   l.version,
+	})
 }
 
 // Log writes the provided string to standard out with the proper logging
-// format. The date and server name are written first, followed by the message.
-// An example is:
-// 2016/01/12 10:21:38 [golog] message goes here
-// <time> [<server name>] <message>
-//
-// Note: the provided time should be UTC.
-func (l *Logger) Log(s string) error {
-	t := time.Now().UTC()
-
-	l.mu.Lock()
-	defer l.mu.Unlock()
-
-	l.formatHeader(t)
-	l.buf = append(l.buf, s...)
-	l.buf = append(l.buf, '\n')
-
-	_, err := l.Out.Write(l.buf)
-	return err
-}
-
-// LogPanic recovers from any panic and logs the panic message and the stack
-// trace to standard out with the proper logging format.
-func (l *Logger) LogPanic() {
-	if err := recover(); err != nil {
-		stack := make([]byte, stackSize)
-		stack = stack[:runtime.Stack(stack, true)]
-		l.Log(fmt.Sprintf("panic: %s\n%s", err, stack))
-	}
+// format.
+func (l *Logger) Log(msg string) {
+	l.standardEntry().Print(msg)
 }
 
 // LogError logs the provided error to standard out with the proper logging
 // format.
-func (l *Logger) LogError(err error) error {
-	return l.Log("error: " + err.Error())
+func (l *Logger) LogError(err error) {
+	entry := l.standardEntry()
+	if _, file, line, ok := runtime.Caller(1); ok {
+		// cut all of the filepath before the "src" folder
+		if idx := strings.Index(file, "/src/"); idx > -1 {
+			file = file[idx+5:]
+		}
+		entry = entry.WithFields(log.Fields{
+			"file": file,
+			"line": line,
+		})
+	}
+	entry.Error(err)
+}
+
+// LogWarning logs the provided warning message to standard out with the proper
+// logging format.
+func (l *Logger) LogWarning(msg string) {
+	l.standardEntry().Warn(msg)
 }
