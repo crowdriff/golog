@@ -46,6 +46,8 @@ var _ = Describe("Golog", func() {
 			Ω(strings.Contains(out, "v=v1")).Should(BeTrue())
 			Ω(strings.Contains(out, "msg=\"test error\"")).Should(BeTrue())
 			Ω(strings.Contains(out, "time=\"")).Should(BeTrue())
+			Ω(strings.Contains(out, "file=\"")).Should(BeTrue())
+			Ω(strings.Contains(out, "line=")).Should(BeTrue())
 		})
 	})
 

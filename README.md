@@ -31,7 +31,7 @@ Log an error to standard out.
 
 Format:
 ```
-time="2016-01-18T13:49:17-05:00" level=error app=golog msg="error message" v=v0.0.1
+time="2016-01-18T13:49:17-05:00" level=error app=golog msg="error message" file="github.com/crowdriff/golog/golog.go" line=24 v=v0.0.1
 ```
 
 ### LogWarning

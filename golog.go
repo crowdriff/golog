@@ -2,6 +2,8 @@ package golog
 
 import (
 	"io"
+	"runtime"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -48,7 +50,18 @@ func (l *Logger) Log(msg string) {
 // LogError logs the provided error to standard out with the proper logging
 // format.
 func (l *Logger) LogError(err error) {
-	l.standardEntry().Error(err)
+	entry := l.standardEntry()
+	if _, file, line, ok := runtime.Caller(1); ok {
+		// cut all of the filepath before the "src" folder
+		if idx := strings.Index(file, "/src/"); idx > -1 {
+			file = file[idx+5:]
+		}
+		entry = entry.WithFields(log.Fields{
+			"file": file,
+			"line": line,
+		})
+	}
+	entry.Error(err)
 }
 
 // LogWarning logs the provided warning message to standard out with the proper
