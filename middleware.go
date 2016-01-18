@@ -2,31 +2,33 @@ package golog
 
 import (
 	"net/http"
-	"strconv"
+	"strings"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // responseWriter represents an object that wraps an http.ResponseWriter to
 // record the response code returned, as well as the size of the response body.
 type responseWriter struct {
 	http.ResponseWriter
-	written bool
-	Code    int
-	Size    int
+	statusWritten bool
+	Code          int
+	Size          int
 }
 
 // WriteHeader records the code and calls the underlying ResponseWriter's
 // WriteHeader method.
 func (rw *responseWriter) WriteHeader(c int) {
 	rw.Code = c
-	rw.written = true
+	rw.statusWritten = true
 	rw.ResponseWriter.WriteHeader(c)
 }
 
 // Write records the number of bytes written and calls the underlying
 // ResponseWriter's Write method.
 func (rw *responseWriter) Write(b []byte) (int, error) {
-	if !rw.written {
+	if !rw.statusWritten {
 		rw.WriteHeader(http.StatusOK)
 	}
 	n, err := rw.ResponseWriter.Write(b)
@@ -42,34 +44,47 @@ func (rw *responseWriter) Flush() {
 	}
 }
 
-// logRequest logs a request to standard out with the provided resonse writer,
-// request, and starting time.
-// An example to show the format is:
-//
-// 2016/01/12 10:21:38 [golog] 200 GET /path?query=10 (1024) 4580
-// <time> [<server name>] <status> <method> <path> (<bytes written>) <microseconds>
-//
-// Note: the provided time should be UTC.
-func (l *Logger) logRequest(w *responseWriter, r *http.Request, start time.Time) error {
-	since := time.Since(start)
+// IP headers
+var xForwardedFor = http.CanonicalHeaderKey("X-Forwarded-For")
+var xRealIP = http.CanonicalHeaderKey("X-Real-IP")
 
-	l.mu.Lock()
-	defer l.mu.Unlock()
+// realIP returns the "real" IP address of the caller, or an empty string.
+// Ported from https://github.com/pressly/chi/blob/master/middleware/realip.go
+func realIP(r *http.Request) string {
+	var ip string
 
-	l.formatHeader(start)
-	l.buf = append(l.buf, strconv.Itoa(w.Code)...)
-	l.buf = append(l.buf, ' ')
-	l.buf = append(l.buf, r.Method...)
-	l.buf = append(l.buf, ' ')
-	l.buf = append(l.buf, r.URL.RequestURI()...)
-	l.buf = append(l.buf, ' ', '(')
-	l.buf = append(l.buf, strconv.Itoa(w.Size)...)
-	l.buf = append(l.buf, ')', ' ')
-	l.buf = append(l.buf, strconv.Itoa(int(since)/1e3)...)
-	l.buf = append(l.buf, '\n')
+	if xff := r.Header.Get(xForwardedFor); xff != "" {
+		i := strings.Index(xff, ", ")
+		if i == -1 {
+			i = len(xff)
+		}
+		ip = xff[:i]
+	} else if xrip := r.Header.Get(xRealIP); xrip != "" {
+		ip = xrip
+	}
 
-	_, err := l.Out.Write(l.buf)
-	return err
+	return ip
+}
+
+// logRequest logs the provided responseWriter, http request, and starting time
+// to standard out in the proper format.
+func (l *Logger) logRequest(w *responseWriter, r *http.Request, start time.Time) {
+	t := time.Now()
+
+	// set real IP
+	if ip := realIP(r); ip != "" {
+		r.RemoteAddr = ip
+	}
+
+	// log the request
+	l.standardEntry(t).WithFields(log.Fields{
+		"code": w.Code,
+		"dur":  int(t.Sub(start)) / 1e3,
+		"ip":   r.RemoteAddr,
+		"mthd": r.Method,
+		"size": w.Size,
+		"uri":  r.URL.RequestURI(),
+	}).Print()
 }
 
 // LogRequestMiddleware returns a middleware function that logs all requests
