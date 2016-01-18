@@ -1,2 +1,3 @@
-github.com/onsi/ginkgo 39d2c24f8a92c88f7e7f4d8ec6c80d3cc8f5ac65
+github.com/Sirupsen/logrus 446d1c146faa8ed3f4218f056fcd165f6bcfda81
+github.com/onsi/ginkgo 7f8ab55aaf3b86885aa55b762e803744d1674700
 github.com/onsi/gomega 2152b45fa28a361beba9aab0885972323a444e28
