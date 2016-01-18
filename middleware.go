@@ -70,12 +70,12 @@ func (l *Logger) logRequest(w *responseWriter, r *http.Request, start time.Time)
 
 	// log the request
 	l.standardEntry(t).WithFields(log.Fields{
-		"code": w.Code,
-		"dur":  int(t.Sub(start)) / 1e3,
-		"ip":   r.RemoteAddr,
-		"mthd": r.Method,
-		"size": w.Size,
-		"uri":  r.URL.RequestURI(),
+		"code":   w.Code,
+		"dur":    int(t.Sub(start)) / 1e3,
+		"ip":     r.RemoteAddr,
+		"method": r.Method,
+		"size":   w.Size,
+		"uri":    r.URL.RequestURI(),
 	}).Print()
 }
 
