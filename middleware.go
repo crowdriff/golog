@@ -60,14 +60,14 @@ func realIP(r *http.Request) string {
 
 // logRequest logs the provided responseWriter, http request, and starting time
 // to standard out in the proper format.
-func (l *Logger) logRequest(w *responseWriter, r *http.Request, start time.Time) {
+func (l *logger) logRequest(w *responseWriter, r *http.Request, start time.Time) {
 	// set real IP
 	if ip := realIP(r); ip != "" {
 		r.RemoteAddr = ip
 	}
 
 	// log the request
-	l.standardEntry().WithFields(log.Fields{
+	rootLogger.standardEntry().WithFields(log.Fields{
 		"code":   w.Code,
 		"dur":    int(time.Now().Sub(start)) / 1e3,
 		"ip":     r.RemoteAddr,
@@ -77,16 +77,14 @@ func (l *Logger) logRequest(w *responseWriter, r *http.Request, start time.Time)
 	}).Print()
 }
 
-// LogRequestMiddleware returns a middleware function that logs all requests
-// with the provided Logger pointer.
-func LogRequestMiddleware(l *Logger) func(http.Handler) http.Handler {
-	return func(h http.Handler) http.Handler {
-		f := func(w http.ResponseWriter, r *http.Request) {
-			t := time.Now()
-			wr := &responseWriter{w, false, 0, 0}
-			h.ServeHTTP(wr, r)
-			l.logRequest(wr, r, t)
-		}
-		return http.HandlerFunc(f)
+// LoggingMiddleware is a middleware function that logs all requests to standard
+// out.
+var LoggingMiddleware = func(h http.Handler) http.Handler {
+	f := func(w http.ResponseWriter, r *http.Request) {
+		t := time.Now()
+		wr := &responseWriter{w, false, 0, 0}
+		h.ServeHTTP(wr, r)
+		rootLogger.logRequest(wr, r, t)
 	}
+	return http.HandlerFunc(f)
 }

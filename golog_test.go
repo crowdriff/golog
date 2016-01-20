@@ -14,17 +14,19 @@ import (
 var _ = Describe("Golog", func() {
 	Context("NewLogger", func() {
 		It("should create a Logger", func() {
-			l := NewLogger("golog", "v1")
-			Ω(l).ShouldNot(BeNil())
+			Init("golog", "v1")
+			Ω(func() {
+				Log("test")
+			}).ShouldNot(Panic())
 		})
 	})
 
 	Context("Log", func() {
 		It("should log a message with the proper format", func() {
 			var buf bytes.Buffer
-			l := NewLogger("golog", "v1")
-			l.SetOutput(&buf)
-			l.Log("test message")
+			Init("golog", "v1")
+			SetOutput(&buf)
+			Log("test message")
 			out := buf.String()
 			Ω(strings.Contains(out, "level=info")).Should(BeTrue())
 			Ω(strings.Contains(out, "app=golog")).Should(BeTrue())
@@ -37,9 +39,9 @@ var _ = Describe("Golog", func() {
 	Context("Log Error", func() {
 		It("should log an error with the proper format", func() {
 			var buf bytes.Buffer
-			l := NewLogger("golog", "v1")
-			l.SetOutput(&buf)
-			l.LogError(errors.New("test error"))
+			Init("golog", "v1")
+			SetOutput(&buf)
+			LogError(errors.New("test error"))
 			out := buf.String()
 			Ω(strings.Contains(out, "level=error")).Should(BeTrue())
 			Ω(strings.Contains(out, "app=golog")).Should(BeTrue())
@@ -54,9 +56,9 @@ var _ = Describe("Golog", func() {
 	Context("Log Warning", func() {
 		It("should log a warning with the proper format", func() {
 			var buf bytes.Buffer
-			l := NewLogger("golog", "v1")
-			l.SetOutput(&buf)
-			l.LogWarning("test warning")
+			Init("golog", "v1")
+			SetOutput(&buf)
+			LogWarning("test warning")
 			out := buf.String()
 			Ω(strings.Contains(out, "level=warn")).Should(BeTrue())
 			Ω(strings.Contains(out, "app=golog")).Should(BeTrue())
