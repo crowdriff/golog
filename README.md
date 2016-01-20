@@ -8,13 +8,13 @@ golog is a logging package to write warnings, errors, requests, or any message t
 
 ### NewLogger
 
-`func NewLogger(app, version string) *Logger`
+`func Init(app, version string)`
 
-Create a new Logger instance with the provided app name and version.
+Initialize the global logger with the provided app name and version.
 
 ### Log
 
-`func (l *Logger) Log(msg string)`
+`func Log(msg string)`
 
 Log any message to standard out.
 
@@ -25,7 +25,7 @@ time="2016-01-18T13:49:17-05:00" level=info app=golog msg="test message" v=v0.0.
 
 ### LogError
 
-`func (l *Logger) LogError(err error)`
+`func LogError(err error)`
 
 Log an error to standard out.
 
@@ -36,7 +36,7 @@ time="2016-01-18T13:49:17-05:00" level=error app=golog msg="error message" file=
 
 ### LogWarning
 
-`func (l *Logger) LogWarning(msg string)`
+`func LogWarning(msg string)`
 
 Log a warning message to standard out.
 
@@ -45,11 +45,9 @@ Format:
 time="2016-01-18T13:49:17-05:00" level=warn app=golog msg="warning message" v=v0.0.1
 ```
 
-### LogRequestMiddleware
+### LoggingMiddleware
 
-`func LogRequestMiddleware(l *Logger) func(http.Handler) http.Handler`
-
-Return a middleware function (`func(http.Handler) http.Handler`) that logs each request to standard out.
+LoggingMiddleware is a middleware function (`func(http.Handler) http.Handler`) that logs each request to standard out.
 
 Format:
 ```

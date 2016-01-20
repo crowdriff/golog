@@ -27,11 +27,10 @@ func (h *fakeHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 var _ = Describe("Middleware", func() {
 	It("should log the request with middleware and the X-Forwarded-For ip address", func() {
 		var buf bytes.Buffer
-		l := NewLogger("golog", "v1")
-		l.SetOutput(&buf)
+		SetOutput(&buf)
 
 		h := &fakeHTTPHandler{http.StatusOK, 100}
-		f := LogRequestMiddleware(l)(h)
+		f := LoggingMiddleware(h)
 
 		wr := httptest.NewRecorder()
 		r, err := http.NewRequest("GET", "http://localhost/path?query=10", nil)
@@ -54,11 +53,10 @@ var _ = Describe("Middleware", func() {
 
 	It("should log the request with middleware and the X-Real-IP ip address", func() {
 		var buf bytes.Buffer
-		l := NewLogger("golog", "v1")
-		l.SetOutput(&buf)
+		SetOutput(&buf)
 
 		h := &fakeHTTPHandler{http.StatusBadRequest, 2345}
-		f := LogRequestMiddleware(l)(h)
+		f := LoggingMiddleware(h)
 
 		wr := httptest.NewRecorder()
 		r, err := http.NewRequest("POST", "http://localhost/path?query=10#yolo", nil)
