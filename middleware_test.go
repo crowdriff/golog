@@ -40,8 +40,8 @@ var _ = Describe("Middleware", func() {
 
 		out := buf.String()
 		Ω(strings.Contains(out, "level=info")).Should(BeTrue())
-		Ω(strings.Contains(out, "app=golog")).Should(BeTrue())
-		Ω(strings.Contains(out, "v=v1")).Should(BeTrue())
+		Ω(strings.Contains(out, appLog)).Should(BeTrue())
+		Ω(strings.Contains(out, versionLog)).Should(BeTrue())
 		Ω(strings.Contains(out, "time=\"")).Should(BeTrue())
 		Ω(strings.Contains(out, "code=200")).Should(BeTrue())
 		Ω(strings.Contains(out, "dur=")).Should(BeTrue())
@@ -66,8 +66,8 @@ var _ = Describe("Middleware", func() {
 
 		out := buf.String()
 		Ω(strings.Contains(out, "level=info")).Should(BeTrue())
-		Ω(strings.Contains(out, "app=golog")).Should(BeTrue())
-		Ω(strings.Contains(out, "v=v1")).Should(BeTrue())
+		Ω(strings.Contains(out, appLog)).Should(BeTrue())
+		Ω(strings.Contains(out, versionLog)).Should(BeTrue())
 		Ω(strings.Contains(out, "time=\"")).Should(BeTrue())
 		Ω(strings.Contains(out, "code=400")).Should(BeTrue())
 		Ω(strings.Contains(out, "dur=")).Should(BeTrue())

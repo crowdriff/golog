@@ -55,14 +55,13 @@ func (l *logger) standardEntry() *log.Entry {
 // Log writes the provided string to standard out with the proper logging
 // format.
 func Log(msg string) {
-	rootLogger.standardEntry().Print(msg)
+	rootLogger.standardEntry().Info(msg)
 }
 
-// LogError logs the provided error to standard out with the proper logging
-// format.
-func LogError(err error) {
-	entry := rootLogger.standardEntry()
-	if _, file, line, ok := runtime.Caller(1); ok {
+// addFileLine is a helper that adds the file & line of the original
+// caller of the Logging function if possible.
+func addFileLine(entry *log.Entry) *log.Entry {
+	if _, file, line, ok := runtime.Caller(2); ok {
 		// cut all of the filepath before the "src" folder
 		if idx := strings.Index(file, "/src/"); idx > -1 {
 			file = file[idx+5:]
@@ -72,7 +71,28 @@ func LogError(err error) {
 			"line": line,
 		})
 	}
-	entry.Error(err)
+	return entry
+}
+
+// LogError logs the provided error to standard out with the proper logging
+// format.
+func LogError(err error) {
+	entry := rootLogger.standardEntry()
+	addFileLine(entry).Error(err)
+}
+
+// LogFatal logs the provided error to standard out with the proper logging
+// format, and then exits.
+func LogFatal(err error) {
+	entry := rootLogger.standardEntry()
+	addFileLine(entry).Fatal(err)
+}
+
+// LogPanic logs the provided error to standard out with the proper logging
+// format, and then panics.
+func LogPanic(err error) {
+	entry := rootLogger.standardEntry()
+	addFileLine(entry).Panic(err)
 }
 
 // LogWarning logs the provided warning message to standard out with the proper
