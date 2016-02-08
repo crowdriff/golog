@@ -34,6 +34,28 @@ Format:
 time="2016-01-18T13:49:17-05:00" level=error app=golog msg="error message" file="github.com/crowdriff/golog/golog.go" line=24 v=v0.0.1
 ```
 
+### LogFatal
+
+`func LogFatal(err error)`
+
+Log an error to standard out and exit.
+
+Format:
+```
+time="2016-01-18T13:49:17-05:00" level=fatal app=golog msg="error message" file="github.com/crowdriff/golog/golog.go" line=24 v=v0.0.1
+```
+
+### LogPanic
+
+`func LogPanic(err error)`
+
+Log an error to standard out and panic.
+
+Format:
+```
+time="2016-01-18T13:49:17-05:00" level=panic app=golog msg="error message" file="github.com/crowdriff/golog/golog.go" line=24 v=v0.0.1
+```
+
 ### LogWarning
 
 `func LogWarning(msg string)`
