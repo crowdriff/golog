@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 
 	. "github.com/crowdriff/golog"
 
@@ -25,10 +24,15 @@ func (h *fakeHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 var _ = Describe("Middleware", func() {
-	It("should log the request with middleware and the X-Forwarded-For ip address", func() {
-		var buf bytes.Buffer
-		SetOutput(&buf)
 
+	var buf bytes.Buffer
+
+	BeforeEach(func() {
+		buf.Reset()
+		SetOutput(&buf)
+	})
+
+	It("should log the request with middleware and the X-Forwarded-For ip address", func() {
 		h := &fakeHTTPHandler{http.StatusOK, 100}
 		f := LoggingMiddleware(h)
 
@@ -39,22 +43,19 @@ var _ = Describe("Middleware", func() {
 		f.ServeHTTP(wr, r)
 
 		out := buf.String()
-		Ω(strings.Contains(out, "level=info")).Should(BeTrue())
-		Ω(strings.Contains(out, appLog)).Should(BeTrue())
-		Ω(strings.Contains(out, versionLog)).Should(BeTrue())
-		Ω(strings.Contains(out, "time=\"")).Should(BeTrue())
-		Ω(strings.Contains(out, "code=200")).Should(BeTrue())
-		Ω(strings.Contains(out, "dur=")).Should(BeTrue())
-		Ω(strings.Contains(out, "ip=\"127.0.0.1:62\"")).Should(BeTrue())
-		Ω(strings.Contains(out, "method=GET")).Should(BeTrue())
-		Ω(strings.Contains(out, "size=100")).Should(BeTrue())
-		Ω(strings.Contains(out, "uri=\"/path?query=10\"")).Should(BeTrue())
+		Ω(out).Should(ContainSubstring("level=info"))
+		Ω(out).Should(ContainSubstring(appLog))
+		Ω(out).Should(ContainSubstring(versionLog))
+		Ω(out).Should(ContainSubstring("time=\""))
+		Ω(out).Should(ContainSubstring("code=200"))
+		Ω(out).Should(ContainSubstring("dur="))
+		Ω(out).Should(ContainSubstring("ip=\"127.0.0.1:62\""))
+		Ω(out).Should(ContainSubstring("method=GET"))
+		Ω(out).Should(ContainSubstring("size=100"))
+		Ω(out).Should(ContainSubstring("uri=\"/path?query=10\""))
 	})
 
 	It("should log the request with middleware and the X-Real-IP ip address", func() {
-		var buf bytes.Buffer
-		SetOutput(&buf)
-
 		h := &fakeHTTPHandler{http.StatusBadRequest, 2345}
 		f := LoggingMiddleware(h)
 
@@ -65,15 +66,15 @@ var _ = Describe("Middleware", func() {
 		f.ServeHTTP(wr, r)
 
 		out := buf.String()
-		Ω(strings.Contains(out, "level=info")).Should(BeTrue())
-		Ω(strings.Contains(out, appLog)).Should(BeTrue())
-		Ω(strings.Contains(out, versionLog)).Should(BeTrue())
-		Ω(strings.Contains(out, "time=\"")).Should(BeTrue())
-		Ω(strings.Contains(out, "code=400")).Should(BeTrue())
-		Ω(strings.Contains(out, "dur=")).Should(BeTrue())
-		Ω(strings.Contains(out, "ip=\"127.0.0.1:62\"")).Should(BeTrue())
-		Ω(strings.Contains(out, "method=POST")).Should(BeTrue())
-		Ω(strings.Contains(out, "size=2345")).Should(BeTrue())
-		Ω(strings.Contains(out, "uri=\"/path?query=10\"")).Should(BeTrue())
+		Ω(out).Should(ContainSubstring("level=info"))
+		Ω(out).Should(ContainSubstring(appLog))
+		Ω(out).Should(ContainSubstring(versionLog))
+		Ω(out).Should(ContainSubstring("time=\""))
+		Ω(out).Should(ContainSubstring("code=400"))
+		Ω(out).Should(ContainSubstring("dur="))
+		Ω(out).Should(ContainSubstring("ip=\"127.0.0.1:62\""))
+		Ω(out).Should(ContainSubstring("method=POST"))
+		Ω(out).Should(ContainSubstring("size=2345"))
+		Ω(out).Should(ContainSubstring("uri=\"/path?query=10\""))
 	})
 })

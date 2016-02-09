@@ -3,7 +3,6 @@ package golog_test
 import (
 	"bytes"
 	"errors"
-	"strings"
 
 	. "github.com/crowdriff/golog"
 
@@ -13,74 +12,96 @@ import (
 
 var _ = Describe("Golog", func() {
 
-	Context("NewLogger", func() {
-		It("should create a Logger", func() {
-			Init("golog", "v1")
-			Ω(func() {
-				Log("test")
-			}).ShouldNot(Panic())
-		})
+	var buf bytes.Buffer
+
+	BeforeEach(func() {
+		buf.Reset()
+		SetOutput(&buf)
 	})
 
 	Context("Log", func() {
 		It("should log a message with the proper format", func() {
-			var buf bytes.Buffer
-			SetOutput(&buf)
 			Log("test message")
 			out := buf.String()
-			Ω(strings.Contains(out, "level=info")).Should(BeTrue())
-			Ω(strings.Contains(out, appLog)).Should(BeTrue())
-			Ω(strings.Contains(out, versionLog)).Should(BeTrue())
-			Ω(strings.Contains(out, "msg=\"test message\"")).Should(BeTrue())
-			Ω(strings.Contains(out, "time=\"")).Should(BeTrue())
+			Ω(out).Should(ContainSubstring("level=info"))
+			Ω(out).Should(ContainSubstring(appLog))
+			Ω(out).Should(ContainSubstring(versionLog))
+			Ω(out).Should(ContainSubstring("msg=\"test message\""))
+			Ω(out).Should(ContainSubstring("time=\""))
+		})
+	})
+
+	Context("Logf", func() {
+		It("should log a message with a format string without placeholders", func() {
+			Logf("test message", "blah")
+			out := buf.String()
+			Ω(out).Should(ContainSubstring("level=info"))
+			Ω(out).Should(ContainSubstring(appLog))
+			Ω(out).Should(ContainSubstring(versionLog))
+			Ω(out).Should(ContainSubstring("msg=\"test message%!(EXTRA string=blah)\""))
+			Ω(out).Should(ContainSubstring("time=\""))
+		})
+
+		It("should log a message with an invalid format parameter type", func() {
+			Logf("test message %d", "blah")
+			out := buf.String()
+			Ω(out).Should(ContainSubstring("level=info"))
+			Ω(out).Should(ContainSubstring(appLog))
+			Ω(out).Should(ContainSubstring(versionLog))
+			Ω(out).Should(ContainSubstring("msg=\"test message %!d(string=blah)\""))
+			Ω(out).Should(ContainSubstring("time=\""))
+		})
+
+		It("should log a formatted message with the proper format", func() {
+			Logf("%sst mess%s", "te", "age")
+			out := buf.String()
+			Ω(out).Should(ContainSubstring("level=info"))
+			Ω(out).Should(ContainSubstring(appLog))
+			Ω(out).Should(ContainSubstring(versionLog))
+			Ω(out).Should(ContainSubstring("msg=\"test message\""))
+			Ω(out).Should(ContainSubstring("time=\""))
 		})
 	})
 
 	Context("Log Error", func() {
 		It("should log an error with the proper format", func() {
-			var buf bytes.Buffer
-			SetOutput(&buf)
 			LogError(errors.New("test error"))
 			out := buf.String()
-			Ω(strings.Contains(out, "level=error")).Should(BeTrue())
-			Ω(strings.Contains(out, appLog)).Should(BeTrue())
-			Ω(strings.Contains(out, versionLog)).Should(BeTrue())
-			Ω(strings.Contains(out, "msg=\"test error\"")).Should(BeTrue())
-			Ω(strings.Contains(out, "time=\"")).Should(BeTrue())
-			Ω(strings.Contains(out, "file=\"")).Should(BeTrue())
-			Ω(strings.Contains(out, "line=")).Should(BeTrue())
+			Ω(out).Should(ContainSubstring("level=error"))
+			Ω(out).Should(ContainSubstring(appLog))
+			Ω(out).Should(ContainSubstring(versionLog))
+			Ω(out).Should(ContainSubstring("msg=\"test error\""))
+			Ω(out).Should(ContainSubstring("time=\""))
+			Ω(out).Should(ContainSubstring("file=\""))
+			Ω(out).Should(ContainSubstring("line="))
 		})
 	})
 
 	Context("Log Panic", func() {
 		It("should log an error with the proper format & panic", func() {
-			var buf bytes.Buffer
-			SetOutput(&buf)
 			Ω(func() {
 				LogPanic(errors.New("test panic"))
 			}).Should(Panic())
 			out := buf.String()
-			Ω(strings.Contains(out, "level=panic")).Should(BeTrue())
-			Ω(strings.Contains(out, appLog)).Should(BeTrue())
-			Ω(strings.Contains(out, versionLog)).Should(BeTrue())
-			Ω(strings.Contains(out, "msg=\"test panic\"")).Should(BeTrue())
-			Ω(strings.Contains(out, "time=\"")).Should(BeTrue())
-			Ω(strings.Contains(out, "file=\"")).Should(BeTrue())
-			Ω(strings.Contains(out, "line=")).Should(BeTrue())
+			Ω(out).Should(ContainSubstring("level=panic"))
+			Ω(out).Should(ContainSubstring(appLog))
+			Ω(out).Should(ContainSubstring(versionLog))
+			Ω(out).Should(ContainSubstring("msg=\"test panic\""))
+			Ω(out).Should(ContainSubstring("time=\""))
+			Ω(out).Should(ContainSubstring("file=\""))
+			Ω(out).Should(ContainSubstring("line="))
 		})
 	})
 
 	Context("Log Warning", func() {
 		It("should log a warning with the proper format", func() {
-			var buf bytes.Buffer
-			SetOutput(&buf)
 			LogWarning("test warning")
 			out := buf.String()
-			Ω(strings.Contains(out, "level=warn")).Should(BeTrue())
-			Ω(strings.Contains(out, appLog)).Should(BeTrue())
-			Ω(strings.Contains(out, versionLog)).Should(BeTrue())
-			Ω(strings.Contains(out, "msg=\"test warning\"")).Should(BeTrue())
-			Ω(strings.Contains(out, "time=\"")).Should(BeTrue())
+			Ω(out).Should(ContainSubstring("level=warn"))
+			Ω(out).Should(ContainSubstring(appLog))
+			Ω(out).Should(ContainSubstring(versionLog))
+			Ω(out).Should(ContainSubstring("msg=\"test warning\""))
+			Ω(out).Should(ContainSubstring("time=\""))
 		})
 	})
 })

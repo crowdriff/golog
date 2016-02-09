@@ -58,6 +58,12 @@ func Log(msg string) {
 	rootLogger.standardEntry().Info(msg)
 }
 
+// Logf writes the provided format string & args to the standard out with the
+// proper logging format.
+func Logf(format string, args ...interface{}) {
+	rootLogger.standardEntry().Infof(format, args...)
+}
+
 // addFileLine is a helper that adds the file & line of the original
 // caller of the Logging function if possible.
 func addFileLine(entry *log.Entry) *log.Entry {
