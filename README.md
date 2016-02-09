@@ -23,6 +23,17 @@ Format:
 time="2016-01-18T13:49:17-05:00" level=info app=golog msg="test message" v=v0.0.1
 ```
 
+### Logf
+
+`func Logf(msg string)`
+
+Log any message to standard out.
+
+Format:
+```
+time="2016-01-18T13:49:17-05:00" level=info app=golog msg="formatted message" v=v0.0.1
+```
+
 ### LogError
 
 `func LogError(err error)`
