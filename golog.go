@@ -83,16 +83,16 @@ func LogError(err error) {
 
 // LogFatal logs the provided error to standard out with the proper logging
 // format, and then exits.
-func LogFatal(err error) {
+func LogFatal(v ...interface{}) {
 	entry := rootLogger.standardEntry()
-	addFileLine(entry).Fatal(err)
+	addFileLine(entry).Fatal(v...)
 }
 
 // LogPanic logs the provided error to standard out with the proper logging
 // format, and then panics.
-func LogPanic(err error) {
+func LogPanic(v interface{}) {
 	entry := rootLogger.standardEntry()
-	addFileLine(entry).Panic(err)
+	addFileLine(entry).Panic(v)
 }
 
 // LogWarning logs the provided warning message to standard out with the proper
